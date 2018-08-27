@@ -1,0 +1,30 @@
+﻿Feature Request: Advanced Search
+
+
+September 28th 2018
+
+
+OBJECTIVE
+To provide users an ‘ADVANCED SEARCH’ feature as an option to the current ‘SEARCH’ feature
+BACKGROUND 
+Current ‘SEARCH’ capability returns all matches of the User’s search term to any of three different categories (Track, Artist, or Album) collectively, but does not allow more refined searches. The proposed new ‘ADVANCED SEARCH’ feature will match one or more terms to one or more individual categories. This will help the User comb through Spotify’s extensive library much more quickly using narrow, targeted search parameters.
+This feature accomplishes the following:
+* Displays an option for ‘ADVANCED SEARCH’ immediately below the ‘SEARCH’ option. Upon selection, the application will load additional search criteria such as “Search for Song”, “Search for Album”, and “Search for Artist”. A “Return to Simple Search” link will also load.
+* Retains the existing, simple ‘SEARCH’ functionality for those users who desire fast results and a simple search interface.
+TECHNICAL DESIGN
+Modifications to SearchBar.js
+Two new constants initSearch and advSearch will be defined in the render function in SearchBar.js.  All current HTML code from <div className=”SearchBar”> through </div> will be moved to the initSearch constant. Below this code will be added to display an additional line for “Click for Advanced Search options”. This line will be tied to an onClick event handler where the value of basicSearch toggles from ‘true’ to ‘false’, initially defined to ‘true’.  The advSearch constant will include similar code with three <input/> ‘s of “Enter a Song Name”, “Enter an Album Name”, and “Enter an Artist Name” and corresponding handle…Change() methods for Song, Album, or Artist. There will be an additional onClick event handler for “Click for Basic Search” toggling from ‘false’ to ‘true’. Under return(), enclosed with <div> and </div>,  we will have the ternary operator  {this.state.basicSearch ? initSearch : advSearch} to render the corresponding search functions. Under the constructor() this.state will be expanded to include .searchSong, .searchAlbum, and .SearchArtist, and we will bind the current value of this for the three new handle…Change() methods. Since the value of basicSearch is initially set to ‘true’, initSearch will be the initial display.
+ 
+Modifications to Spotify.js
+In Spotify.js, we will define a new const =  searchParameters which we will use to initiate the search in the correct Spotify search syntax. searchParameters will be defined as an interpolated string for each of the referenced, non-empty search terms spaced by %20 resulting in the correct Spotify search syntax.  For example, searching for an Album named ‘darkness’ from the Artist ‘bruce’ (Springsteen) will result in searchParameters = album:darkness%20artist:bruce. In search(), the https://api.spotify.com/v1/search endpoint will call q=${searchParameters}. In this specific example, track: is omitted from the string interpolation since there is no entry, i.e. the searchParameters will be written to include in the Spotify search only those terms which are defined and omitting any others.
+    
+Modifications to App.js
+In App.js, we will need to update the searchSpotify() method to include terms for the basic searchTerm as well as searchSong, searchAlbum, and searchArtist so that these are passed to Spotify.js.
+
+
+The new functionality should look as follows upon implementation:
+  
+
+CAVEATS
+Potential Additional Features
+The feature as currently proposed searches for Tracks only and does not permit searches for Albums or Artists. It may be desirable to add a simple menu to permit searches to return results based on these parameters by changing type in the https://api.spotify.com/v1/search endpoint from type=track to type=album or type= artist , although there will be extensive repercussions that will need to be tracked throughout all components. It also may be desirable to allow the results to be further filtered by duration of the track, by whether the song is known to contain explicit lyrics, or by specifically omitting certain terms from the results.
